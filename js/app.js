@@ -60,7 +60,7 @@ function create() {
     for (var xt = 0; xt < gameWidth; xt += 35) {
         for (var yt = 0; yt < gameHeight; yt += 35) {
 
-            var rnd = Math.floor(Math.random() * 1000);
+            var rnd = Math.floor(Math.random() * 500);
 
             if (rnd == 1)
             {
@@ -94,7 +94,9 @@ function create() {
 
     // enable physics on the player
     game.physics.isoArcade.enable(player);
-    player.body.width = 20;
+    player.body.widthX = 25;
+    player.body.widthY = 25;
+    player.body.height = 20;
     player.body.collideWorldBounds = true;
     player.items = {};
     keyW = game.input.keyboard.isDown(87);
@@ -108,6 +110,8 @@ function create() {
     hitKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     hitKey.onDown.add(hitAction, this);
 
+    buildScreenKey = game.input.keyboard.addKey(66);
+    buildScreenKey.onDown.add(triggerBuildScreen, this);
 
 
 }
@@ -265,9 +269,21 @@ function addItems(obj) {
 
 function checkSpeed(speed, max, target) {
     result = speed + target;
-    console.log(max);
+    //console.log(max);
     if(result > max || result < max) {
         return max;
     }
     return result;
+}
+
+function triggerBuildScreen() {
+    var buildScreenDiv = document.getElementById('buildScreen');
+    
+    if (buildScreenDiv.style.display === "none") {
+        buildScreenDiv.style.display = "block";
+        buildScreenDiv.style.width = buildScreen.width;
+        buildScreenDiv.style.height = buildScreen.height;
+    }else{
+        buildScreenDiv.style.display = "none";
+    }
 }
