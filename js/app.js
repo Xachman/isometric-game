@@ -25,6 +25,7 @@ function preload() {
 
     game.load.image('grass', 'assets/grass.png');
     game.load.image('tree-small-red-berrys', 'assets/tree-small-red-berrys.png');
+    game.load.image('raspberry-bush', 'assets/Raspberry-Bush-Sprite.png');
     game.load.spritesheet('characterAnim', 'assets/worker.png', 72, 72);
 }
 
@@ -35,6 +36,8 @@ function create() {
     grassGroup = game.add.group();
     obstacleGroup = game.add.group();
     treeGroup = game.add.group();
+    fruitBush = game.add.group();
+    targetable = [];
 
     var grassTile;
     for (var xt = gameWidth; xt > 0; xt -= 35) {
@@ -71,10 +74,33 @@ function create() {
                 tree.body.immovable = true;
                 tree.hits = 3;
                 tree.gives = {wood: 3};
+                targetable.push(tree);
             }
         }
     }
+    for (var xt = 0; xt < gameWidth; xt += 35) {
+        for (var yt = 0; yt < gameHeight; yt += 35) {
 
+            var rnd = Math.floor(Math.random() * 500);
+
+            if (rnd == 1)
+            {
+                bush = game.add.isoSprite(xt, yt, 0, 'raspberry-bush', 0, fruitBush);
+                bush.anchor.set(0, 0.5);
+                game.physics.isoArcade.enable(bush);
+                bush.body.collideWorldBounds = true;
+                bush.body.immovable = true;
+                bush.hits = 3;
+                bush.gives = {berries: 3};
+                bush.width = 25;
+                bush.height = 25;
+                bush.body.widthX = 25;
+                bush.body.widthY = 25;
+                bush.body.height = 25;
+                targetable.push(bush);
+            }
+        }
+    }
 
     player = game.add.isoSprite(350, 280, 0, 'characterAnim', 0, obstacleGroup);
 
@@ -113,7 +139,7 @@ function create() {
     buildScreenKey = game.input.keyboard.addKey(66);
     buildScreenKey.onDown.add(triggerBuildScreen, this);
 
-
+    game.input.onDown.add(targetOnClick);
 }
 
 function update() {
@@ -200,13 +226,13 @@ function render() {
 
     if (showDebug)
     {
-//        for (var i = 0; i < treeGroup.children.length; i++) {
-//            var child = treeGroup.children[i];
+//        for (var i = 0; i < fruitBush.children.length; i++) {
+//            var child = fruitBush.children[i];
 //            game.debug.bodyInfo(child, 32, 32);
 //            game.debug.body(child);
 //        }
-                  game.debug.bodyInfo(player, 32, 32);
-            game.debug.body(player);
+        game.debug.bodyInfo(player, 32, 32);
+        game.debug.body(player);
 //        debugCtx.beginFill(0xFF3300);
 //        debugCtx.lineStyle(10, 0xffd900, 1);
 //         debugCtx.drawCircle((player.isoY / player.body.height) + (player.isoY / player.body.width), (player.isoX / player.body.width) - (player.isoY / player.body.height), 2);
@@ -231,7 +257,8 @@ function hitTree() {
 function checkDistance(group, item, distance) {
     for (var i = 0; i < group.children.length; i++) {
         var child = group.children[i];
-        if(!child.visible) continue;
+        if (!child.visible)
+            continue;
         if (
                 item.body.x < (child.body.x + child.width + distance) &&
                 item.body.x + item.width > (child.body.x - distance) &&
@@ -239,20 +266,20 @@ function checkDistance(group, item, distance) {
                 item.body.y + item.height > (child.body.y - distance)
                 )
             return child;
-        
+
     }
-    
+
     return false;
 }
 
 function hitAction(key) {
     console.log('hit action');
     target = checkDistance(treeGroup, player, 5);
-    if(target) {
+    if (target) {
         console.log('hit target');
         target.hits -= 1;
-        console.log('target hits: '+target.hits);
-        if(target.hits <= 0) {
+        console.log('target hits: ' + target.hits);
+        if (target.hits <= 0) {
             addItems(target.gives);
             target.kill();
         }
@@ -261,16 +288,17 @@ function hitAction(key) {
 
 function addItems(obj) {
     for (item in obj) {
-        if(!player.items[item]){
-             player.items[item] = 0;
+        if (!player.items[item]) {
+            player.items[item] = 0;
         }
-        player.items[item] +=  obj[item]}
+        player.items[item] += obj[item]
+    }
 }
 
 function checkSpeed(speed, max, target) {
     result = speed + target;
     //console.log(max);
-    if(result > max || result < max) {
+    if (result > max || result < max) {
         return max;
     }
     return result;
@@ -278,12 +306,35 @@ function checkSpeed(speed, max, target) {
 
 function triggerBuildScreen() {
     var buildScreenDiv = document.getElementById('buildScreen');
-    
+
     if (buildScreenDiv.style.display === "none") {
         buildScreenDiv.style.display = "block";
         buildScreenDiv.style.width = buildScreen.width;
         buildScreenDiv.style.height = buildScreen.height;
-    }else{
+    } else {
         buildScreenDiv.style.display = "none";
+    }
+}
+
+function targetOnClick(e) {
+    //console.log('click');
+    if (!game.input.activePointer.leftButton.isDown)
+        return;
+    //console.log('targetOnClick');
+    var x = game.input.mousePointer.x +game.camera.position.x;
+    var y = game.input.mousePointer.y +game.camera.position.y;
+    console.log('X: '+x+' Y: '+y);
+    for (var i = 0; i < targetable.length; i++) {
+        var child = targetable[i];
+        //console.log('child: '+child);
+        if (
+                x < (child.body.x + child.width) &&
+                x > (child.body.x) &&
+                y < (child.body.y + child.height) &&
+                y > (child.body.y)
+                ) {
+            console.log('targeted');
+            target = child;
+        }
     }
 }
