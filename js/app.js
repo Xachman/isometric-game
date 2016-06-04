@@ -24,16 +24,19 @@ function preload() {
     game.iso.anchor.setTo(0.5, 0);
 
     game.load.image('grass', 'assets/grass.png');
-    game.load.image('tree-small-red-berrys', 'assets/tree-small-red-berrys.png');
-    game.load.image('raspberry-bush', 'assets/Raspberry-Bush-Sprite.png');
     game.load.spritesheet('characterAnim', 'assets/worker.png', 72, 72);
+    game.load.image('tree-small-red-berrys', 'assets/tree-small-red-berrys.png');
+    game.load.image('raspberry-bush', 'assets/raspberry-bush.png');
+
 }
 
 function create() {
 
     floorGroup = game.add.group();
+    
     itemGroup = game.add.group();
     grassGroup = game.add.group();
+    graphicsGroup = game.add.group();
     obstacleGroup = game.add.group();
     treeGroup = game.add.group();
     fruitBush = game.add.group();
@@ -68,7 +71,7 @@ function create() {
             if (rnd == 1)
             {
                 tree = game.add.isoSprite(xt, yt, 0, 'tree-small-red-berrys', 0, treeGroup);
-                tree.anchor.set(0, 0.5);
+                tree.anchor.set(0.5);
                 game.physics.isoArcade.enable(tree);
                 tree.body.collideWorldBounds = true;
                 tree.body.immovable = true;
@@ -86,17 +89,13 @@ function create() {
             if (rnd == 1)
             {
                 bush = game.add.isoSprite(xt, yt, 0, 'raspberry-bush', 0, fruitBush);
-                bush.anchor.set(0, 0.5);
+                bush.anchor.set(0.5);
                 game.physics.isoArcade.enable(bush);
                 bush.body.collideWorldBounds = true;
                 bush.body.immovable = true;
                 bush.hits = 3;
                 bush.gives = {berries: 3};
-                bush.width = 25;
-                bush.height = 25;
-                bush.body.widthX = 25;
-                bush.body.widthY = 25;
-                bush.body.height = 25;
+
                 targetable.push(bush);
             }
         }
@@ -130,16 +129,28 @@ function create() {
     keyA = game.input.keyboard.isDown(65);
     keyS = game.input.keyboard.isDown(83);
     keyD = game.input.keyboard.isDown(68);
-    spacebar =
-            game.camera.follow(player);
-    debugCtx = game.add.graphics(100, 100);
+    spacebar = game.camera.follow(player);
+    debugCtx = game.add.graphics(0, 0);
+    targetDraw = game.add.graphics(0, 0, graphicsGroup);
+    targeter = new Targeter(targetDraw, targetable);
     hitKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-    hitKey.onDown.add(hitAction, this);
+    actions = new Actions();
+    hitKey.onDown.add(function(){
+        if(target)
+        actions.hitAction(target, player);
+    }, this);
 
     buildScreenKey = game.input.keyboard.addKey(66);
     buildScreenKey.onDown.add(triggerBuildScreen, this);
+    cursorPos = new Phaser.Plugin.Isometric.Point3();
+    bodyPos = new Phaser.Plugin.Isometric.Point3();
+    game.input.onDown.add(function () {
+        targeter.targetOnClick();
+    });
 
-    game.input.onDown.add(targetOnClick);
+
+
+
 }
 
 function update() {
@@ -154,7 +165,7 @@ function update() {
 
 function moveCharCheck() {
     var speed = 10;
-    var maxSpeed = 100;
+    var maxSpeed = 400;
     var keyW = game.input.keyboard.isDown(87),
             keyA = game.input.keyboard.isDown(65),
             keyS = game.input.keyboard.isDown(83),
@@ -163,6 +174,7 @@ function moveCharCheck() {
             y = player.body.velocity.y;
 
     if (keyW && keyD) {
+        100
         player.animations.play('NE');
         player.direction = 'NE';
         flipSprite(player, 'right');
@@ -231,12 +243,17 @@ function render() {
 //            game.debug.bodyInfo(child, 32, 32);
 //            game.debug.body(child);
 //        }
-        game.debug.bodyInfo(player, 32, 32);
-        game.debug.body(player);
-//        debugCtx.beginFill(0xFF3300);
-//        debugCtx.lineStyle(10, 0xffd900, 1);
-//         debugCtx.drawCircle((player.isoY / player.body.height) + (player.isoY / player.body.width), (player.isoX / player.body.width) - (player.isoY / player.body.height), 2);
-//        debugCtx.endFill();
+//        var count = 0;
+//        for (var i = 0; i < treeGroup.children.length; i++) {
+//            var child = treeGroup.children[i];
+//            game.debug.bodyInfo(child, 32, 32);
+//            game.debug.body(child);
+//            
+//        }
+//        
+//        game.debug.bodyInfo(player, 32, 32);
+//        game.debug.body(player);
+
     }
 
 }
@@ -249,43 +266,6 @@ function flipSprite(sprite, dir) {
         sprite.scale.x = 1;
     }
 }
-
-function hitTree() {
-    //if (player.body.x < )
-}
-
-function checkDistance(group, item, distance) {
-    for (var i = 0; i < group.children.length; i++) {
-        var child = group.children[i];
-        if (!child.visible)
-            continue;
-        if (
-                item.body.x < (child.body.x + child.width + distance) &&
-                item.body.x + item.width > (child.body.x - distance) &&
-                item.body.y < (child.body.y + child.height + distance) &&
-                item.body.y + item.height > (child.body.y - distance)
-                )
-            return child;
-
-    }
-
-    return false;
-}
-
-function hitAction(key) {
-    console.log('hit action');
-    target = checkDistance(treeGroup, player, 5);
-    if (target) {
-        console.log('hit target');
-        target.hits -= 1;
-        console.log('target hits: ' + target.hits);
-        if (target.hits <= 0) {
-            addItems(target.gives);
-            target.kill();
-        }
-    }
-}
-
 function addItems(obj) {
     for (item in obj) {
         if (!player.items[item]) {
@@ -315,26 +295,21 @@ function triggerBuildScreen() {
         buildScreenDiv.style.display = "none";
     }
 }
-
-function targetOnClick(e) {
-    //console.log('click');
-    if (!game.input.activePointer.leftButton.isDown)
-        return;
-    //console.log('targetOnClick');
-    var x = game.input.mousePointer.x +game.camera.position.x;
-    var y = game.input.mousePointer.y +game.camera.position.y;
-    console.log('X: '+x+' Y: '+y);
+function drawDebug() {
     for (var i = 0; i < targetable.length; i++) {
         var child = targetable[i];
-        //console.log('child: '+child);
-        if (
-                x < (child.body.x + child.width) &&
-                x > (child.body.x) &&
-                y < (child.body.y + child.height) &&
-                y > (child.body.y)
-                ) {
-            console.log('targeted');
-            target = child;
-        }
+        // game.iso.projectXY({x: child.isoX, y: child.isoY}, bodyPos);
+        var x = child.x - 100 - child.width / 2;
+        var y = child.y - 100 - child.height / 2;
+        game.iso.unproject({x: x, y: y}, bodyPos);
+        console.log(bodyPos);
+
+        debugCtx.lineStyle(0);
+        console.log(' childX: ' + child.body.x + ' childY: ' + child.body.y + ' width: ' + child.width + ' height: ' + child.height);
+        debugCtx.beginFill(0xFF3300);
+        debugCtx.drawCircle(x, y, 10);
+        debugCtx.endFill();
+
     }
 }
+
