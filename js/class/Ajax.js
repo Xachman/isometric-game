@@ -2,10 +2,8 @@ Ajax = function () {
     this.ajaxobj = new XMLHttpRequest();
     this.output;
     this.getJson = function (url, callback) {
-        console.log(url);
-        this.onreadystatechange(callback);
-        this.ajaxobj.open("GET", url, true);
-        this.ajaxobj.send();
+        this.get(url, callback);
+        
     }
 
     this.onreadystatechange = function (callback)
@@ -16,5 +14,10 @@ Ajax = function () {
                 callback(http.response);
             }
         }
+    }
+    this.get = function(url, callback) {
+        this.onreadystatechange(callback);
+        this.ajaxobj.open("GET", url+'?rand='+Date.now(), true);
+        this.ajaxobj.send();
     }
 }

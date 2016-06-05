@@ -16,4 +16,6 @@ DisplayHelper = function (char) {
         }
         return false;
     }
+    
+    
 }
