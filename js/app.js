@@ -106,9 +106,6 @@ function create() {
 
     // add the animations from the spritesheet
     player.animations.add('S', [4, 9, 14, 19, 24], 10, true);
-//    player.animations.add('SW', [8, 9, 10, 11, 12, 13, 14, 15], 10, true);
-//    player.animations.add('W', [16, 17, 18, 19, 20, 21, 22, 23], 10, true);
-//    player.animations.add('NW', [24, 25, 26, 27, 28, 29, 30, 31], 10, true);
     player.animations.add('N', [0, 5, 10, 15, 20], 10, true);
     player.animations.add('NE', [1, 6, 11, 16, 21], 10, true);
     player.animations.add('E', [2, 7, 12, 17, 22], 10, true);
@@ -123,139 +120,47 @@ function create() {
     player.body.widthY = 25;
     player.body.height = 20;
     player.body.collideWorldBounds = true;
-    player.items = {};
+    player.materials = {};
+    
     keyW = game.input.keyboard.isDown(87);
-    // keyW.onUp.
     keyA = game.input.keyboard.isDown(65);
     keyS = game.input.keyboard.isDown(83);
     keyD = game.input.keyboard.isDown(68);
-    spacebar = game.camera.follow(player);
-    debugCtx = game.add.graphics(0, 0);
+    game.camera.follow(player);
+    
     targetDraw = game.add.graphics(0, 0, graphicsGroup);
     targeter = new Targeter(targetDraw, targetable);
+    
+//    cursorPos = new Phaser.Plugin.Isometric.Point3();
+//    bodyPos = new Phaser.Plugin.Isometric.Point3();
+    
     hitKey = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
     actions = new Actions();
     hitKey.onDown.add(function(){
-        if(target)
+        if(typeof target == 'undefined') return;
         actions.hitAction(target, player);
     }, this);
-
-    buildScreenKey = game.input.keyboard.addKey(66);
-    buildScreenKey.onDown.add(triggerBuildScreen, this);
-    cursorPos = new Phaser.Plugin.Isometric.Point3();
-    bodyPos = new Phaser.Plugin.Isometric.Point3();
     game.input.onDown.add(function () {
         targeter.targetOnClick();
     });
+    buildScreen = new BuildScreen();
+    buildScreenKey = game.input.keyboard.addKey(66);
+    buildScreenKey.onDown.add(triggerBuildScreen, this);
 
-
-
-
+    playerHelper = new PlayerHelper(player);
+    debug = new Debug(false);
 }
 
 function update() {
-    moveCharCheck();
+    playerHelper.moveCheck();
     game.physics.isoArcade.collide(treeGroup, player);
-
-    //player.body.velocity.y = -speed;
-    //player.body.velocity.x = -speed;
-
 }
 
-
-function moveCharCheck() {
-    var speed = 10;
-    var maxSpeed = 400;
-    var keyW = game.input.keyboard.isDown(87),
-            keyA = game.input.keyboard.isDown(65),
-            keyS = game.input.keyboard.isDown(83),
-            keyD = game.input.keyboard.isDown(68),
-            x = player.body.velocity.x,
-            y = player.body.velocity.y;
-
-    if (keyW && keyD) {
-        100
-        player.animations.play('NE');
-        player.direction = 'NE';
-        flipSprite(player, 'right');
-        x = 0;
-        y = -checkSpeed(speed * 2, maxSpeed * 2, y);
-    } else if (keyW && keyA) {
-        player.animations.play('NE');
-        player.direction = 'NW';
-        flipSprite(player, 'left');
-        y = 0;
-        x = -checkSpeed(speed * 2, maxSpeed * 2, x);
-    } else if (keyS && keyA) {
-        player.animations.play('SE');
-        player.direction = 'SW';
-        flipSprite(player, 'left');
-        y = checkSpeed(speed * 2, maxSpeed * 2, y);
-        x = 0;
-    } else if (keyS && keyD) {
-        player.animations.play('SE');
-        player.direction = 'SE';
-        flipSprite(player, 'right');
-        y = 0;
-        x = checkSpeed(speed * 2, maxSpeed * 2, x);
-    } else if (keyW) {
-        player.animations.play('N');
-        player.direction = 'N';
-        flipSprite(player, 'right');
-        y = checkSpeed(-speed, -maxSpeed, y);
-        x = checkSpeed(-speed, -maxSpeed, x);
-    } else if (keyS)
-    {
-        player.animations.play('S');
-        player.direction = 'S';
-        flipSprite(player, 'right');
-        y = checkSpeed(speed, maxSpeed, y);
-        x = checkSpeed(speed, maxSpeed, x);
-    } else if (keyD) {
-        player.animations.play('E');
-        player.direction = 'E';
-        flipSprite(player, 'right');
-        x = checkSpeed(speed, maxSpeed, x);
-        y = checkSpeed(-speed, -maxSpeed, y);
-    } else if (keyA)
-    {
-        player.animations.play('E');
-        player.direction = 'W';
-        flipSprite(player, 'left');
-        x = checkSpeed(-speed, -maxSpeed, x);
-        y = checkSpeed(speed, maxSpeed, y);
-    } else
-    {
-        player.animations.stop();
-        x = 0;
-        y = 0;
-    }
-
-    player.body.velocity.x = x;
-    player.body.velocity.y = y;
-}
 function render() {
-
-    if (showDebug)
+    if (debug.display)
     {
-//        for (var i = 0; i < fruitBush.children.length; i++) {
-//            var child = fruitBush.children[i];
-//            game.debug.bodyInfo(child, 32, 32);
-//            game.debug.body(child);
-//        }
-//        var count = 0;
-//        for (var i = 0; i < treeGroup.children.length; i++) {
-//            var child = treeGroup.children[i];
-//            game.debug.bodyInfo(child, 32, 32);
-//            game.debug.body(child);
-//            
-//        }
-//        
-//        game.debug.bodyInfo(player, 32, 32);
-//        game.debug.body(player);
-
+        debug.debugGroupBody(fruitBush);
     }
-
 }
 
 function flipSprite(sprite, dir) {
@@ -266,50 +171,15 @@ function flipSprite(sprite, dir) {
         sprite.scale.x = 1;
     }
 }
-function addItems(obj) {
-    for (item in obj) {
-        if (!player.items[item]) {
-            player.items[item] = 0;
-        }
-        player.items[item] += obj[item]
-    }
-}
-
-function checkSpeed(speed, max, target) {
-    result = speed + target;
-    //console.log(max);
-    if (result > max || result < max) {
-        return max;
-    }
-    return result;
-}
 
 function triggerBuildScreen() {
     var buildScreenDiv = document.getElementById('buildScreen');
-
     if (buildScreenDiv.style.display === "none") {
         buildScreenDiv.style.display = "block";
         buildScreenDiv.style.width = buildScreen.width;
         buildScreenDiv.style.height = buildScreen.height;
     } else {
         buildScreenDiv.style.display = "none";
-    }
-}
-function drawDebug() {
-    for (var i = 0; i < targetable.length; i++) {
-        var child = targetable[i];
-        // game.iso.projectXY({x: child.isoX, y: child.isoY}, bodyPos);
-        var x = child.x - 100 - child.width / 2;
-        var y = child.y - 100 - child.height / 2;
-        game.iso.unproject({x: x, y: y}, bodyPos);
-        console.log(bodyPos);
-
-        debugCtx.lineStyle(0);
-        console.log(' childX: ' + child.body.x + ' childY: ' + child.body.y + ' width: ' + child.width + ' height: ' + child.height);
-        debugCtx.beginFill(0xFF3300);
-        debugCtx.drawCircle(x, y, 10);
-        debugCtx.endFill();
-
     }
 }
 

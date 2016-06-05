@@ -1,0 +1,17 @@
+{
+    "tools": [
+        {
+            "name": "Stone Ax",
+            "hit": "1",
+            "affects": "wood",
+            "image": "stoneax.jpg"
+        },
+        {
+            "name": "Stone Pick",
+            "hit": "1",
+            "affects": "stone",
+            "image": "stonepick.jpg"
+        }
+    ]
+
+}
