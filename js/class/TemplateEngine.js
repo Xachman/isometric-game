@@ -25,16 +25,17 @@ TemplateEngine = function () {
 
         //console.log(loops);
         this.processLoop(loops, data);
+        console.log(doc.body.innerHTML);
     }
 
     this.processLoop = function (loops, data) {
         var obj = this;
-
+        
         this.loop(loops, function (loop, item) {
             var directive = loop.getAttribute('data-loop');
-            var html = obj.replaceLoop(loop, data, directive);
-            console.log(html);
+            var loop = obj.replaceLoop(loop, data, directive);
         });
+        console.log(loops[0]);
     }
     this.loop = function (items, callback) {
         for (var i = 0; i < items.length; i++) {
