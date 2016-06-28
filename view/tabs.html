@@ -2,7 +2,12 @@
     <div data-loop="tabs as tab">
         <div class="tab {{tab.name}}">{{tab.name}}</div>
     </div>
+</div>
+
+<div class="items">
     <div data-loop="tabs as tab">
-        <div class="tab {{tab.name}}">{{tab.name}}</div>
+        <div data-loop="tab.items as item">
+            <div class="item-name">{{item.name}}</div>
+        </div>
     </div>
 </div>

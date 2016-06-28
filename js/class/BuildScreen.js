@@ -18,20 +18,24 @@ BuildScreen =  function () {
     
     this.buildElements = function() {
         this.createTabs();
-        
-        this.insertHTML();
     }
     
     this.createTabs = function() {
         var itemTitles = Object.keys(this.items);
         var obj = this;
         var data = {tabs: []} 
-        this.loop(itemTitles, function(item, index) {    
-            data.tabs.push({name: item});
+        var obj = this;
+        this.loop(itemTitles, function(itemName, index) {    
+            data.tabs.push({name: itemName});
+            var items = obj.items[itemName];
+            console.log(items);
+            data.tabs[index].items =  items;
         });
-        
-        this.tempEngine.getTemplate('/view/tabs.html', data, function() {
-            this.addHTML('');
+        console.log(data);
+        var obj = this
+        this.tempEngine.getTemplate('/view/tabs.html', data, function(html) {
+            obj.addHTML(html);
+            obj.insertHTML();
         });
 //        this.displayHTML = '<div class="tabs">';
 //        this.loop(itemTitles, function(item, index) {
@@ -61,6 +65,7 @@ BuildScreen =  function () {
         this.displayHTML += '<div class="tab">'+name+'</div>';
     }
     this.insertHTML = function() {
+        console.log(this.displayHTML);
         document.getElementById('buildScreen').innerHTML = this.displayHTML;
     }
     
